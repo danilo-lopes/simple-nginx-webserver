@@ -1,5 +1,5 @@
 ---
-- name: Configuring Machine
+- name: Setup Machine
   gather_facts: false
   hosts: localhost
   become: true
@@ -30,11 +30,11 @@
         - /etc/nginx/sites-enabled
 
     # Database Things
-    - name: Download MySql binary
+    - name: Download MySql repo
       get_url:
         url: http://repo.mysql.com/mysql-community-release-el7-7.noarch.rpm
         dest: /tmp/
-    - name: Install Package
+    - name: Install Mysql repo
       yum:
         name: /tmp/mysql-community-release-el7-7.noarch.rpm
         state: present
@@ -42,20 +42,20 @@
       yum:
         name: mysql-server
         state: present
-    - name: Install MySQL-python
+    - name: Install MySQL-python lib
       yum:
         name: MySQL-python
         state: present
-    - name: Start Mysql
+    - name: Start Mysql service
       service:
         name: mysqld
         state: started
         enabled: yes
-    - name: Create a new database wordpress
+    - name: Create a new database named wordpress
       mysql_db:
         name: wordpress
         state: present
-    - name: Create database user wpuser
+    - name: Create database user named wpuser
       mysql_user:
         name: wpuser
         password: EPPBk2XEHKLWgr
@@ -82,7 +82,7 @@
         enabled: yes
 
     # Wodpress
-    - name: Download tar.gz
+    - name: Download wordpress
       unarchive:
         src: https://wordpress.org/latest.tar.gz
         dest: /var/www
