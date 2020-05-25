@@ -1,0 +1,164 @@
+---
+- name: Configuring Machine
+  gather_facts: false
+  hosts: localhost
+  become: true
+
+  tasks:
+    # Nginx things
+    - name: Install Nginx
+      yum:
+        name: nginx
+        state: present
+
+    - name: Start Nginx
+      service:
+        name: nginx
+        state: started
+
+    - name: Creates Directory
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: 0755
+        owner: nginx
+        group: nginx
+      with_items:
+        - /var/www/site/html
+        - /var/www/loja/html
+        - /var/www/tomcat
+        - /etc/nginx/sites-enabled
+
+    # Database Things
+    - name: Download MySql binary
+      get_url:
+        url: http://repo.mysql.com/mysql-community-release-el7-7.noarch.rpm
+        dest: /tmp/
+    - name: Install Package
+      yum:
+        name: /tmp/mysql-community-release-el7-7.noarch.rpm
+        state: present
+    - name: Install MySql
+      yum:
+        name: mysql-server
+        state: present
+    - name: Install MySQL-python
+      yum:
+        name: MySQL-python
+        state: present
+    - name: Start Mysql
+      service:
+        name: mysqld
+        state: started
+        enabled: yes
+    - name: Create a new database wordpress
+      mysql_db:
+        name: wordpress
+        state: present
+    - name: Create database user wpuser
+      mysql_user:
+        name: wpuser
+        password: EPPBk2XEHKLWgr
+        priv: '*.*:ALL'
+        state: present
+
+    # PHP things
+    - name: Install PHP
+      yum:
+        name: php
+        state: present
+    - name: Install php for mysql
+      yum:
+        name: php-mysqlnd
+        state: present
+    - name: Install PHP-FPM
+      yum:
+        name: php-fpm
+        state: present
+    - name: Start PHP-FPM
+      service:
+        name: php-fpm
+        state: started
+        enabled: yes
+
+    # Wodpress
+    - name: Download tar.gz
+      unarchive:
+        src: https://wordpress.org/latest.tar.gz
+        dest: /var/www
+        remote_src: yes
+        owner: nginx
+
+    # Install Java
+    - name: Install Java
+      yum:
+        name: java-1.8.0-openjdk-devel
+        state: present
+
+    # Tomcat things
+    - name: Create tomcat user
+      user:
+        name: tomcat
+        shell: /bin/false
+        home: /var/www/tomcat
+    - name: Download tomcat
+      unarchive:
+        src: http://apache.cs.utah.edu/tomcat/tomcat-9/v9.0.35/bin/apache-tomcat-9.0.35.tar.gz
+        dest: /var/www/tomcat
+        remote_src: yes
+        extra_opts: [--strip-components=1]
+        owner: tomcat
+
+    # Moving files
+    - name: Moveing tomcat service file
+      command: mv /tmp/tomcat.service /etc/systemd/system/
+
+    - name: Backup PHP-FPM www.conf
+      command: mv /etc/php-fpm.d/www.conf /etc/php-fpm.d/www.conf.ORIG
+
+    - name: Moving PHP-FPM site.conf
+      command: mv /tmp/site.conf /etc/php-fpm.d/
+
+    - name: Moving PHP-FPM loja.conf
+      command: mv /tmp/loja.conf /etc/php-fpm.d/
+
+    - name: Moving PHP-FPM blog.conf
+      command: mv /tmp/blog.conf /etc/php-fpm.d/
+
+    - name: Backup Nginx file conf
+      command: mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.ORIG
+
+    - name: Moving Nginx file
+      command: mv /tmp/nginx.conf /etc/nginx/
+
+    - name: Moving wp-confi.php
+      command: mv /tmp/wp-config.php /var/www/wordpress
+
+    - name: Moving server blocks files
+      command: mv sitebiqueirabr.conf blogbiqueirabr.conf lojabiqueirabr.conf tomcat-reverseProxy.conf /etc/nginx/sites-enabled
+
+    - name: Moving index.php site
+      command: mv /tmp/index-site.php /var/www/site/html/index-site.php
+
+    - name: Moving index.php loja
+      command: mv /tmp/index-loja.php /var/www/loja/html/index-loja.php
+
+    # Restarting services
+    - name: systemD Daemon reload
+      systemd:
+        daemon_reload: yes
+
+    - name: Start tomcat service
+      systemd:
+        name: tomcat
+        state: started
+
+    - name: Restart PHP-FPM service
+      systemd:
+        name: php-fpm
+        state: restarted
+
+    - name: Restart Nginx service
+      systemd:
+        name: nginx
+        state: restarted
