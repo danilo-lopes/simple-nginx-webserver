@@ -43,6 +43,15 @@
     └── variables.tf
 ````
 
+## Arquitura monilitica
+
+![Image](desafio_1_monolito.png)
+
+
+## Arquitetura com alta disponibilidade
+
+![Image](desafio_1_alta_disponibilidade.png)
+
 ## Ambiente
 
 O terraform disponibiliza os seguinte recursos:
