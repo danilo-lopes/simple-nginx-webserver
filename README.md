@@ -45,12 +45,12 @@
 
 ## Arquitura monilitica
 
-![Image](desafio_1_monolito.png)
+![Image](monolito.png)
 
 
 ## Arquitetura com alta disponibilidade
 
-![Image](desafio_1_alta_disponibilidade.png)
+![Image](altadisponibilidade.png)
 
 ## Ambiente
 
