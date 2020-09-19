@@ -50,7 +50,7 @@
 
 ## Arquitetura com alta disponibilidade
 
-![Image](altadisponibilidade.png)
+![Image](architecture.png)
 
 ## Ambiente
 
